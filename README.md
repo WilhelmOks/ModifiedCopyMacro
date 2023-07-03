@@ -78,7 +78,7 @@ If you know how to make it possible, please let me know :)
 
 ## Installation
 
-Macros are a new language feature of Swift 5.9 and they will only work in Xcode 15 and later.
+Macros are a new language feature of Swift 5.9 and it will only work in Xcode 15 and later.
 
 Add the url `https://github.com/WilhelmOks/ModifiedCopyMacro.git` as a Swift Package to your project.
 
