@@ -22,13 +22,11 @@ struct Person {
 }
 ```
 
-and it will add a copy function for each stored property and constant.
-
-In this case:
+and it will add a copy function for each stored property and constant:
 ```
 struct Person {
     let name: String
-    let age: Int
+    var age: Int
 
     /// Returns a copy of the caller whose value for `name` is different.
     func copy(name: String) -> Self {
