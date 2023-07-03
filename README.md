@@ -18,7 +18,7 @@ Apply the `@Copyable` macro to a struct:
 @Copyable
 struct Person {
     let name: String
-    let age: Int
+    var age: Int
 }
 ```
 
