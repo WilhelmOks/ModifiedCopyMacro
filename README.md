@@ -1,3 +1,11 @@
+<p>
+    <img src="https://img.shields.io/badge/Swift-5.9-orange.svg" />
+    <a href="https://swift.org/package-manager">
+        <img src="https://img.shields.io/badge/spm-compatible-brightgreen.svg?style=flat" alt="Swift Package Manager" />
+    </a>
+    <img src="https://img.shields.io/badge/platforms-macOS | iOS | tvOS | watchOS | Linux-brightgreen.svg?style=flat" alt="Platforms: macOS, iOS, tvOS, watchOS, Linux" />
+</p>
+
 # ModifiedCopyMacro
 A Swift macro for making inline copies of a struct by modifying a property.<br/>
 The syntax is similar to Kotlin's copy function for data classes: https://kotlinlang.org/docs/data-classes.html#copying
@@ -71,6 +79,8 @@ This seems to be a limitation of the macro system.<br/>
 If you know how to make it possible, please let me know :)
 
 ## Installation
+
+Macros are a new language feature of Swift 5.9 and they will only work in Xcode 15 and later.
 
 Add the url `https://github.com/WilhelmOks/ModifiedCopyMacro.git` as a Swift Package to your project.
 
