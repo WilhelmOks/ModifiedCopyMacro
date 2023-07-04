@@ -14,7 +14,7 @@ The syntax is similar to Kotlin's copy function for data classes: https://kotlin
 
 Apply the `@Copyable` macro to a struct:
 
-```
+```swift
 @Copyable
 struct Person {
     let name: String
@@ -23,7 +23,7 @@ struct Person {
 ```
 
 and it will add a copy function for each stored property and constant:
-```
+```swift
 struct Person {
     let name: String
     var age: Int
