@@ -41,18 +41,19 @@ public struct ModifiedCopyMacro: MemberMacro {
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
         guard let structDeclSyntax = declaration as? StructDeclSyntax else {
-            let diagnostic = Diagnostic(node: .init(node), message: ModifiedCopyDiagnostic.notAStruct)
+            let diagnostic = Diagnostic(node: node, message: ModifiedCopyDiagnostic.notAStruct
+            )
             context.diagnose(diagnostic)
             return []
         }
         let variables = structDeclSyntax.memberBlock.members.compactMap { $0.decl.as(VariableDeclSyntax.self) }
         
-        let bindings = variables.flatMap(\.bindings).filter { accessorIsAllowed($0.accessor) }
-        
+        let bindings = variables.flatMap(\.bindings).filter { accessorIsAllowed($0.accessorBlock) }
+
         return bindings.compactMap { binding in
             let propertyName = binding.pattern
             guard let typeName = binding.typeAnnotation?.type else {
-                let diagnostic = Diagnostic(node: .init(node), message: ModifiedCopyDiagnostic.propertyTypeProblem(binding))
+                let diagnostic = Diagnostic(node: node, message: ModifiedCopyDiagnostic.propertyTypeProblem(binding))
                 context.diagnose(diagnostic)
                 return nil
             }
@@ -66,17 +67,16 @@ public struct ModifiedCopyMacro: MemberMacro {
         }
     }
     
-    private static func accessorIsAllowed(_ accessor: PatternBindingSyntax.Accessor?) -> Bool {
-        guard let accessor else { return true }
-        if let accessorBlockSyntax = AccessorBlockSyntax(accessor) {
-            let containsGetOrSet = accessorBlockSyntax.accessors.contains { accessorDeclSyntax in
-                accessorDeclSyntax.accessorKind.text == "get" || accessorDeclSyntax.accessorKind.text == "set"
-            }
-            return !containsGetOrSet
-        } else if CodeBlockSyntax(accessor) != nil {
+    private static func accessorIsAllowed(_ accessorsBlock: AccessorBlockSyntax?) -> Bool {
+        guard let accessorsBlock else { return true }
+        switch accessorsBlock.accessors {
+        case .accessors(let accessorDeclListSyntax):
+            return !accessorDeclListSyntax.contains(where: {
+                $0.accessorSpecifier.text == "get" || $0.accessorSpecifier.text == "set"
+            })
+        case .getter:
             return false
         }
-        return false
     }
 }
 

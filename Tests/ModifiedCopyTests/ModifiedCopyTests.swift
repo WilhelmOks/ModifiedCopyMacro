@@ -82,14 +82,17 @@ final class ModifiedCopyTests: XCTestCase {
                         print("nickName changed to \(nickName ?? "(nil)")")
                     }
                 }
+
                 /// Returns a copy of the caller whose value for `name` is different.
                 func copy(name: String) -> Self {
                     .init(name: name, age: age, nickName: nickName)
                 }
+
                 /// Returns a copy of the caller whose value for `age` is different.
                 func copy(age: Int) -> Self {
                     .init(name: name, age: age, nickName: nickName)
                 }
+
                 /// Returns a copy of the caller whose value for `nickName` is different.
                 func copy(nickName: String?) -> Self {
                     .init(name: name, age: age, nickName: nickName)
