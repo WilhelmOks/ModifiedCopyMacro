@@ -41,9 +41,14 @@ final class ModifiedCopyTests: XCTestCase {
         assertMacroExpansion(
             #"""
             @Copyable
-            struct Person {
-                var name: String
+            public struct Person {
+                private(set) var name: String
+                
                 let age: Int
+                
+                private var favoriteColor: String
+                
+                /// This should not generate a copy function because it's not a stored property.
                 var fullName: String {
                     get {
                         name
@@ -52,20 +57,35 @@ final class ModifiedCopyTests: XCTestCase {
                         name = newValue
                     }
                 }
+                
+                /// This should not generate a copy function because it's not a stored property.
                 var uppercasedName: String {
                     name.uppercased()
                 }
+                
                 var nickName: String? = "Bobby Tables" {
                     didSet {
                         print("nickName changed to \(nickName ?? "(nil)")")
                     }
+                }
+                
+                init(name: String, age: Int, favoriteColor: String, nickName: String? = nil) {
+                    self.name = name
+                    self.age = age
+                    self.favoriteColor = favoriteColor
+                    self.nickName = nickName
                 }
             }
             """#,
             expandedSource: #"""
-            struct Person {
-                var name: String
+            public struct Person {
+                private(set) var name: String
+                
                 let age: Int
+                
+                private var favoriteColor: String
+                
+                /// This should not generate a copy function because it's not a stored property.
                 var fullName: String {
                     get {
                         name
@@ -74,28 +94,43 @@ final class ModifiedCopyTests: XCTestCase {
                         name = newValue
                     }
                 }
+                
+                /// This should not generate a copy function because it's not a stored property.
                 var uppercasedName: String {
                     name.uppercased()
                 }
+                
                 var nickName: String? = "Bobby Tables" {
                     didSet {
                         print("nickName changed to \(nickName ?? "(nil)")")
                     }
                 }
-
+                
+                init(name: String, age: Int, favoriteColor: String, nickName: String? = nil) {
+                    self.name = name
+                    self.age = age
+                    self.favoriteColor = favoriteColor
+                    self.nickName = nickName
+                }
+                
                 /// Returns a copy of the caller whose value for `name` is different.
-                func copy(name: String) -> Self {
-                    .init(name: name, age: age, nickName: nickName)
+                private func copy(name: String) -> Self {
+                    .init(name: name, age: age, favoriteColor: favoriteColor, nickName: nickName)
                 }
-
+                
                 /// Returns a copy of the caller whose value for `age` is different.
-                func copy(age: Int) -> Self {
-                    .init(name: name, age: age, nickName: nickName)
+                public func copy(age: Int) -> Self {
+                    .init(name: name, age: age, favoriteColor: favoriteColor, nickName: nickName)
                 }
-
+                
+                /// Returns a copy of the caller whose value for `favoriteColor` is different.
+                private func copy(favoriteColor: String) -> Self {
+                    .init(name: name, age: age, favoriteColor: favoriteColor, nickName: nickName)
+                }
+                
                 /// Returns a copy of the caller whose value for `nickName` is different.
-                func copy(nickName: String?) -> Self {
-                    .init(name: name, age: age, nickName: nickName)
+                public func copy(nickName: String?) -> Self {
+                    .init(name: name, age: age, favoriteColor: favoriteColor, nickName: nickName)
                 }
             }
             """#,

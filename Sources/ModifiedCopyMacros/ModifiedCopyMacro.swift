@@ -46,24 +46,32 @@ public struct ModifiedCopyMacro: MemberMacro {
             context.diagnose(diagnostic)
             return []
         }
+        let structVisibility = structDeclSyntax.modifiers.visibilityText() ?? "internal"
+        
         let variables = structDeclSyntax.memberBlock.members.compactMap { $0.decl.as(VariableDeclSyntax.self) }
         
         let bindings = variables.flatMap(\.bindings).filter { accessorIsAllowed($0.accessorBlock) }
-
-        return bindings.compactMap { binding in
-            let propertyName = binding.pattern
-            guard let typeName = binding.typeAnnotation?.type else {
-                let diagnostic = Diagnostic(node: node, message: ModifiedCopyDiagnostic.propertyTypeProblem(binding))
-                context.diagnose(diagnostic)
-                return nil
-            }
+        
+        return variables.flatMap { variable in
+            let variableVisibility = variable.modifiers.visibilityText() ?? structVisibility
             
-            return """
-                /// Returns a copy of the caller whose value for `\(propertyName)` is different.
-                func copy(\(propertyName): \(typeName.trimmed)) -> Self {
-                    .init(\(raw: bindings.map { "\($0.pattern): \($0.pattern)" }.joined(separator: ", ")))
+            return variable.bindings
+                .filter { accessorIsAllowed($0.accessorBlock) }
+                .compactMap { binding -> DeclSyntax? in
+                    let propertyName = binding.pattern
+                guard let typeName = binding.typeAnnotation?.type else {
+                    let diagnostic = Diagnostic(node: node, message: ModifiedCopyDiagnostic.propertyTypeProblem(binding))
+                    context.diagnose(diagnostic)
+                    return nil
                 }
-                """
+                
+                return """
+                    /// Returns a copy of the caller whose value for `\(propertyName)` is different.
+                    \(raw: variableVisibility) func copy(\(propertyName): \(typeName.trimmed)) -> Self {
+                        .init(\(raw: bindings.map { "\($0.pattern): \($0.pattern)" }.joined(separator: ", ")))
+                    }
+                    """
+            }
         }
     }
     
@@ -77,6 +85,15 @@ public struct ModifiedCopyMacro: MemberMacro {
         case .getter:
             return false
         }
+    }
+}
+
+extension DeclModifierListSyntax {
+    private static let visibilityModifiers: Set = ["private", "fileprivate", "internal", "package", "public", "open"]
+    
+    func visibilityText() -> String? {
+        self.map(\.name.text)
+            .first(where: { Self.visibilityModifiers.contains($0) })
     }
 }
 
