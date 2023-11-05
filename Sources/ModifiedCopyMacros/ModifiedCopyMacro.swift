@@ -27,9 +27,9 @@ enum ModifiedCopyDiagnostic: DiagnosticMessage {
     var diagnosticID: MessageID {
         switch self {
         case .notAStruct:
-                .init(domain: "ModifiedCopyMacros", id: "notAStruct")
+            .init(domain: "ModifiedCopyMacros", id: "notAStruct")
         case .propertyTypeProblem(let binding):
-                .init(domain: "ModifiedCopyMacros", id: "propertyTypeProblem(\(binding.pattern))")
+            .init(domain: "ModifiedCopyMacros", id: "propertyTypeProblem(\(binding.pattern))")
         }
     }
 }
@@ -41,26 +41,26 @@ public struct ModifiedCopyMacro: MemberMacro {
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
         guard let structDeclSyntax = declaration as? StructDeclSyntax else {
-            let diagnostic = Diagnostic(node: node, message: ModifiedCopyDiagnostic.notAStruct
-            )
+            let diagnostic = Diagnostic(node: Syntax(node), message: ModifiedCopyDiagnostic.notAStruct)
             context.diagnose(diagnostic)
             return []
         }
-        let structVisibility = structDeclSyntax.modifiers.visibilityText() ?? "internal"
+        
+        let structVisibility = structDeclSyntax.modifiers?.visibilityText() ?? "internal"
         
         let variables = structDeclSyntax.memberBlock.members.compactMap { $0.decl.as(VariableDeclSyntax.self) }
         
-        let bindings = variables.flatMap(\.bindings).filter { accessorIsAllowed($0.accessorBlock) }
+        let bindings = variables.flatMap(\.bindings).filter { accessorIsAllowed($0.accessor) }
         
         return variables.flatMap { variable in
-            let variableVisibility = variable.modifiers.visibilityText() ?? structVisibility
+            let variableVisibility = variable.modifiers?.visibilityText() ?? structVisibility
             
             return variable.bindings
-                .filter { accessorIsAllowed($0.accessorBlock) }
+                .filter { accessorIsAllowed($0.accessor) }
                 .compactMap { binding -> DeclSyntax? in
                     let propertyName = binding.pattern
                 guard let typeName = binding.typeAnnotation?.type else {
-                    let diagnostic = Diagnostic(node: node, message: ModifiedCopyDiagnostic.propertyTypeProblem(binding))
+                    let diagnostic = Diagnostic(node: Syntax(node), message: ModifiedCopyDiagnostic.propertyTypeProblem(binding))
                     context.diagnose(diagnostic)
                     return nil
                 }
@@ -75,20 +75,20 @@ public struct ModifiedCopyMacro: MemberMacro {
         }
     }
     
-    private static func accessorIsAllowed(_ accessorsBlock: AccessorBlockSyntax?) -> Bool {
-        guard let accessorsBlock else { return true }
-        switch accessorsBlock.accessors {
+    private static func accessorIsAllowed(_ accessor: PatternBindingSyntax.Accessor?) -> Bool {
+        guard let accessor else { return true }
+        return switch accessor {
         case .accessors(let accessorDeclListSyntax):
-            return !accessorDeclListSyntax.contains(where: {
-                $0.accessorSpecifier.text == "get" || $0.accessorSpecifier.text == "set"
-            })
+            !accessorDeclListSyntax.accessors.contains {
+                $0.accessorKind.text == "get" || $0.accessorKind.text == "set"
+            }
         case .getter:
-            return false
+            false
         }
     }
 }
 
-extension DeclModifierListSyntax {
+extension ModifierListSyntax {
     private static let visibilityModifiers: Set = ["private", "fileprivate", "internal", "package", "public", "open"]
     
     func visibilityText() -> String? {
