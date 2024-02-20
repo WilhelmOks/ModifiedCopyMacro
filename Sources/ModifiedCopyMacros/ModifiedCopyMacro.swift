@@ -46,17 +46,17 @@ public struct ModifiedCopyMacro: MemberMacro {
             return []
         }
         
-        let structVisibility = structDeclSyntax.modifiers?.visibilityText() ?? "internal"
+        let structVisibility = structDeclSyntax.modifiers.visibilityText() ?? "internal"
         
         let variables = structDeclSyntax.memberBlock.members.compactMap { $0.decl.as(VariableDeclSyntax.self) }
         
-        let bindings = variables.flatMap(\.bindings).filter { accessorIsAllowed($0.accessor) }
+        let bindings = variables.flatMap(\.bindings).filter { accessorIsAllowed($0.accessorBlock?.accessors) }
         
         return variables.flatMap { variable in
-            let variableVisibility = variable.modifiers?.visibilityText() ?? structVisibility
+            let variableVisibility = variable.modifiers.visibilityText() ?? structVisibility
             
             return variable.bindings
-                .filter { accessorIsAllowed($0.accessor) }
+                .filter { accessorIsAllowed($0.accessorBlock?.accessors) }
                 .compactMap { binding -> DeclSyntax? in
                     let propertyName = binding.pattern
                 guard let typeName = binding.typeAnnotation?.type else {
@@ -75,12 +75,12 @@ public struct ModifiedCopyMacro: MemberMacro {
         }
     }
     
-    private static func accessorIsAllowed(_ accessor: PatternBindingSyntax.Accessor?) -> Bool {
+    private static func accessorIsAllowed(_ accessor: AccessorBlockSyntax.Accessors?) -> Bool {
         guard let accessor else { return true }
         return switch accessor {
         case .accessors(let accessorDeclListSyntax):
-            !accessorDeclListSyntax.accessors.contains {
-                $0.accessorKind.text == "get" || $0.accessorKind.text == "set"
+            !accessorDeclListSyntax.contains {
+                $0.accessorSpecifier.text == "get" || $0.accessorSpecifier.text == "set"
             }
         case .getter:
             false
@@ -88,7 +88,7 @@ public struct ModifiedCopyMacro: MemberMacro {
     }
 }
 
-extension ModifierListSyntax {
+extension DeclModifierListSyntax {
     private static let visibilityModifiers: Set = ["private", "fileprivate", "internal", "package", "public", "open"]
     
     func visibilityText() -> String? {
