@@ -52,6 +52,11 @@ It's not possible to implement it like that in Swift because it's not possible t
 And we also can't use nil as a marker for the old/current value, because nil might be a valid new value that we want the property to set to when we make a copy.<br/>
 There might be a way that I'm not aware of, to still make it possible. So if you know how to do it, please let me know.<br/>
 
+#### CopyableCombi
+
+With version 2.1.0, the separate macro CopyableCombi was introduced, which generates copy functions with all combinations of parameters.
+This solution has the disadvantage that the number of generated functions can become large quickly, but it provides an API which is more similar to Kotlin's copy function.
+
 ### Stored properties and constants
 
 A copy function will be generated for each stored property (`var`) and each constant (`let`) of the struct.<br/>
