@@ -6,6 +6,7 @@ import ModifiedCopy
 
 let testMacros: [String: Macro.Type] = [
     "Copyable": ModifiedCopyMacro.self,
+    "CopyableCombi": ModifiedCopyCombiMacro.self,
 ]
 
 @Copyable
@@ -132,6 +133,41 @@ final class ModifiedCopyTests: XCTestCase {
                 /// Returns a copy of the caller whose value for `nickName` is different.
                 public func copy(nickName: String?) -> Self {
                     .init(name: name, age: age, favoriteColor: favoriteColor, nickName: nickName)
+                }
+            }
+            """#,
+            macros: testMacros
+        )
+    }
+    
+    func testCombiMacroExpansion() {
+        assertMacroExpansion(
+            #"""
+            @CopyableCombi
+            public struct Person {
+                let name: String
+                let age: Int
+            }
+            """#,
+            expandedSource:
+            #"""
+            public struct Person {
+                let name: String
+                let age: Int
+            
+                /// Returns a copy of the caller whose value for `name` is different.
+                public func copy(name: String) -> Self {
+                    .init(name: name, age: age)
+                }
+
+                /// Returns a copy of the caller whose value for `age` is different.
+                public func copy(age: Int) -> Self {
+                    .init(name: name, age: age)
+                }
+            
+                /// Returns a copy of the caller whose values for `name` and `age` are different.
+                public func copy(name: String, age: Int) -> Self {
+                    .init(name: name, age: age)
                 }
             }
             """#,

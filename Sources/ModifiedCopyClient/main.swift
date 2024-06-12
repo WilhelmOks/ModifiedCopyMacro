@@ -38,3 +38,11 @@ public struct Person {
 }
 
 print("Person copy with new age: \(Person(name: "Hank", age: 50, favoriteColor: "pink", nickName: "Hanky").copy(age: 42).age)")
+
+@CopyableCombi
+struct Song {
+    let title: String
+    let year: Int
+    //let isFavorite: Bool
+    //let rating: Double
+}
