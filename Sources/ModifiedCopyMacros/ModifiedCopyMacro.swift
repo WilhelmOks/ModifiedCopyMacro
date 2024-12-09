@@ -100,14 +100,11 @@ public struct ModifiedCopyCombiMacro: MemberMacro {
         
         let variablesCombi = variables.combinationsWithoutRepetition.filter { !$0.isEmpty }
         
-        let listFormatter = ListFormatter()
-        listFormatter.locale = .init(identifier: "en")
-        
         return variablesCombi.compactMap { variableCombi -> DeclSyntax? in
             let bindingsCombi = variableCombi.flatMap { $0.bindings }
             let many = bindingsCombi.count > 1
             
-            let propertyNamesString = listFormatter.string(from: bindingsCombi.map { "`\($0.pattern)`" }) ?? "?"
+            let propertyNamesString = bindingsCombi.map { "`\($0.pattern)`" }.joined(separator: " and ")
             let parameterListString = bindingsCombi.map { binding in "\(binding.pattern): \(binding.typeAnnotation?.type.trimmed ?? "?")" }.joined(separator: ", ")
             
             return """
