@@ -8,6 +8,9 @@ public struct Person {
     
     private var favoriteColor: String
     
+    /// This should not be included in copy method initializers because it's a static property.
+    static let genus = "Homo Sapien"
+
     /// This should not generate a copy function because it's not a stored property.
     var fullName: String {
         get {
