@@ -15,6 +15,9 @@ struct Person: Equatable {
     
     let age: Int
     
+    // This should not be included in copy method initializers because it's a static property.
+    static let genus = "Homo Sapien"
+
     /// This should not generate a copy function because it's not a stored property.
     var fullName: String {
         get {
@@ -48,6 +51,9 @@ final class ModifiedCopyTests: XCTestCase {
                 let age: Int
 
                 private var favoriteColor: String
+            
+                // This should not be included in copy method initializers because it's a static property.
+                static let genus = "Homo Sapien"
                 
                 /// This should not generate a copy function because it's not a stored property.
                 var fullName: String {
@@ -86,6 +92,9 @@ final class ModifiedCopyTests: XCTestCase {
                 let age: Int
 
                 private var favoriteColor: String
+            
+                // This should not be included in copy method initializers because it's a static property.
+                static let genus = "Homo Sapien"
                 
                 /// This should not generate a copy function because it's not a stored property.
                 var fullName: String {
@@ -147,6 +156,19 @@ final class ModifiedCopyTests: XCTestCase {
             public struct Person {
                 let name: String
                 let age: Int
+            
+                // This should not be included in copy method initializers because it's a static property.
+                static let genus = "Homo Sapien"
+            
+                /// This should not generate a copy function because it's not a stored property.
+                var fullName: String {
+                    get {
+                        name
+                    }
+                    set {
+                        name = newValue
+                    }
+                }
             }
             """#,
             expandedSource:
@@ -154,6 +176,19 @@ final class ModifiedCopyTests: XCTestCase {
             public struct Person {
                 let name: String
                 let age: Int
+            
+                // This should not be included in copy method initializers because it's a static property.
+                static let genus = "Homo Sapien"
+            
+                /// This should not generate a copy function because it's not a stored property.
+                var fullName: String {
+                    get {
+                        name
+                    }
+                    set {
+                        name = newValue
+                    }
+                }
             
                 /// Returns a copy of the caller whose value for `name` is different.
                 public func copy(name: String) -> Self {

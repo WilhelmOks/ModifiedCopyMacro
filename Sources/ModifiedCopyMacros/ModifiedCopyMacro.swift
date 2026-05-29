@@ -49,10 +49,14 @@ public struct ModifiedCopyMacro: MemberMacro {
         
         let structVisibility = structDeclSyntax.modifiers.visibilityText() ?? "internal"
         
-        let variables = structDeclSyntax.memberBlock.members.compactMap { $0.decl.as(VariableDeclSyntax.self) }
-        
-        let bindings = variables.flatMap(\.bindings).filter { accessorIsAllowed($0.accessorBlock?.accessors) }
-        
+        let variables = structDeclSyntax.memberBlock.members
+            .compactMap { $0.decl.as(VariableDeclSyntax.self) }
+            .filter { !isStaticProperty($0) }
+
+        let bindings = variables
+            .flatMap(\.bindings)
+            .filter { accessorIsAllowed($0.accessorBlock?.accessors) }
+
         return variables.flatMap { variable in
             let variableVisibility = variable.modifiers.visibilityText() ?? structVisibility
             
@@ -94,6 +98,7 @@ public struct ModifiedCopyCombiMacro: MemberMacro {
         
         let variables = structDeclSyntax.memberBlock.members
             .compactMap { $0.decl.as(VariableDeclSyntax.self) }
+            .filter { !isStaticProperty($0) }
             .filter { $0.bindings.allSatisfy { accessorIsAllowed($0.accessorBlock?.accessors) } }
         
         let bindings = variables.flatMap(\.bindings).filter { accessorIsAllowed($0.accessorBlock?.accessors) }
@@ -127,6 +132,10 @@ private func accessorIsAllowed(_ accessor: AccessorBlockSyntax.Accessors?) -> Bo
     case .getter:
         false
     }
+}
+
+private func isStaticProperty(_ variableDecl: VariableDeclSyntax) -> Bool {
+    return variableDecl.modifiers.contains(where: { $0.name.tokenKind == .keyword(.static) })
 }
 
 extension DeclModifierListSyntax {
